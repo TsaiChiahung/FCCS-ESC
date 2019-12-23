@@ -1,0 +1,213 @@
+---
+title: "Economy or Security, US or China"
+author: 
+   - George Yin
+   - Iain Johnston
+   - Chia-hung Tsai
+   
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    fig_caption: yes
+    latex_engine: xelatex
+    includes:
+      in_header: header.tex
+  html_notebook:
+    highlight: textmate
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
+editor_options:
+  chunk_output_type: inline
+bibliography: ['bibimmigration.bib','bibpolarization.bib']
+biblio-stype: 'apsr'
+link-citations: true
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 8, collapse = TRUE,
+                       latex.options.color='blue')
+knitr::write_bib(c("knitr","stringr"), "", width=60)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE, include=FALSE}
+library(tidyverse)
+library(stargazer)
+library(foreign); library(ggplot2); library(tidyverse); library(readstata13)
+library(ggcorrplot)
+library(mediation)
+library(MASS)
+options(stringsAsFactors = F)
+```
+
+
+# Introduction
+
+
+# Cross-Strait Relations
+
+# Literature Review
+
+# Data and Hypotheses
+We draw national land-line numbers randomly and conduct a telephone survey between November 14 and 18, 2019. There are 1,222 completions. 
+
+
+
+# Descriptive Analysis
+## Distribution
+```{r echo=FALSE}
+load('PP1997B1.Rdata')
+```
+
+
+```{r fig.showtext = TRUE, fig.align='center',fig.cap="\\label{fig:figs}Relationship w/ China or U. S. for National Security"}
+barplot(100*table(choice1)/1222)
+```
+
+```{r fig.showtext = TRUE, fig.align='center',fig.cap="\\label{fig:figs}Relationship w/ China or U. S. for Economy"}
+barplot(100*table(choice2)/1222)
+```
+
+## Cross-tabulation 
+
+```{r fig.showtext = TRUE, fig.align='center',fig.cap="\\label{fig:figs}Economy and Security"}
+DT <-data.frame(Economy=choice1, Security=choice2)
+require(gridExtra)
+DT <-na.omit(DT) 
+plot1<-ggplot(aes(x = Economy, fill = Security), data=DT) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(name = "Within group Percentage"
+                     , labels = scales::percent) 
+plot2<-ggplot(aes(fill = Economy, x = Security), data=DT) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(name = "Within group Percentage"
+                     , labels = scales::percent) 
+grid.arrange(plot1, plot2, nrow=2)
+```
+
+
+# Data Analysis
+```{r  results='asis'}
+load('PP1997B1.Rdata')
+newdata<-data.frame(choice1, choice2, influence, USintervene,  male.n, age1, age2, education, panblue, pangreen)
+newdata<-na.omit(newdata)
+opm1<-polr(choice1 ~ influence +  USintervene 
+       + panblue + pangreen
+       + male.n + age1 + age2 + education, 
+        data=newdata)
+
+opm2<-polr(choice2 ~ influence +  USintervene 
+       + panblue + pangreen
+       + male.n + age1 + age2 + education, 
+        data=newdata)
+
+stargazer(opm1, opm2, title="Better Relationship w/ China for National Security and Economy",  
+          dep.var.labels=c("National Security", "Economy"),
+         covariate.labels=c('Influence of China',
+        "US intervention", "Pan-blue", "Pan-green", 
+        "Male", "20-39 yrs", "40-59 yrs","Education"), header=F, no.space = TRUE, style = 'io')
+```
+
+
+
+```{r  results='asis'}
+load('PP1997B1.Rdata')
+newdata<-data.frame(choice1, choice2, influence, USintervene, panblue, pangreen, male.n, age1, age2, education)
+newdata<-na.omit(newdata)
+om1<-polr(choice1 ~ influence +  USintervene 
+       + influence:USintervene + panblue + pangreen
+       + male.n + age1 + age2 + education, 
+        data=newdata)
+
+om2<-polr(choice2 ~ influence +  USintervene 
+       + influence:USintervene + panblue + pangreen
+       + male.n + age1 + age2 + education, 
+        data=newdata)
+
+stargazer(om1, om2, title="Better Relationship w/ China for National Security and Economy",  
+          dep.var.labels=c("National Security", "Economy"),
+         covariate.labels=c('Influence of China',
+        "US intervention", "Interaction", "Pan-blue", "Pan-green",
+        "Male", "20-39 yrs", "40-59 yrs","Education"), header=F, no.space = TRUE, style = 'io')
+```
+
+## Two Ordered Probit Models
+```{r  results='asis'}
+load('PP1997B1.Rdata')
+newdata<-data.frame(choice1, choice2, influence, USintervene, feeling, uni, kmt, dpp, Tsai, male.n, age1, age2,
+          education)
+newdata<-na.omit(newdata)
+m1<-polr(choice1 ~ influence + feeling + USintervene 
+       + influence:USintervene +feeling  +  uni + kmt + dpp  + Tsai
+       + male.n + age1 + age2 + education, 
+        data=newdata)
+
+m2<-polr(choice2 ~ influence +  USintervene 
+       + influence:USintervene +  feeling + uni + kmt + dpp + Tsai
+       + male.n + age1 + age2 + education, 
+        data=newdata)
+
+stargazer(m1, m2, title="Better Relationship w/ China for National Security and Economy",  
+          dep.var.labels=c("National Security", "Economy"),
+         covariate.labels=c('Influence of China',
+        "US intervention", "Interaction", "Feeling about China", 
+        "Unification",
+        "KMT identification", "DPP identification", "Tsai's performance",
+        "Male", "20-39 yrs", "40-59 yrs","Education"), header=F, no.space = TRUE, style = 'io')
+```
+# Conclusion
+
+# Appendix
+## Question wording
+
+ - Influence
+ 
+ Do you think the U.S. or China has more influence in Asia?
+
+ - Economy
+ 
+ Regarding Taiwan's economy, do you think Taiwan should have better relationship with the U.S. or China?
+
+ - National security
+ 
+ Regarding Taiwan's national security, do you think Taiwan should  have better relationship with the U.S. or China?
+
+ - Feeling about China
+ 
+ From 0 to 10, where 0 means that you strongly dislike and 10 means that you strongly like, what is your feeling about China?
+ 
+  - Taiwanese/Chinese identity
+  
+  Do you think of yourself as Taiwanese, Chinese, or both?
+  
+  - Partisanship
+  
+  In our society, there are many political parties. Which party do you identify with?
+  
+  - Economy or sovereignty (es)
+  
+  If we cannot handle economy and sovereignty at the same time, which one do you think is more important for our country?
+  
+  - US intervene
+  
+  If Taiwan declares independence and China attacks Taiwan, do you think the U.S. would remains
+neutral, hesitate, or send troops to help Taiwan?
+  
+  - Tsai's performance
+  
+  In general, are you satisfied or dissatisfied with President Tsai's performance for past three years?
+  
+  - trade
+  
+  Regarding the cross-Strait trade, do you think our government should be more open or strengthen the regulation?
+  
+
+
+
+# References
+
+
